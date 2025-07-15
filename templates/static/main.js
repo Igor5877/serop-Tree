@@ -1,24 +1,7 @@
 
-function loadServers() {
-    axios.get('/servers/')
-        .then(function(response) {
-            let serverSelect = document.getElementById('server-select');
-            serverSelect.innerHTML = '';
-            response.data.forEach(function(server) {
-                let option = document.createElement('option');
-                option.value = server.id;
-                option.textContent = server.name;
-                serverSelect.appendChild(option);
-            });
-            send_query(); // Call send_query after servers are loaded
-        })
-        .catch(function(error) {
-            alert('Error loading servers: ' + error);
-        });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     loadServers();
+    document.getElementById('server-select').addEventListener('change', send_query);
 });
 
 document.querySelector('#search-input').addEventListener('input', function(event) {
@@ -138,9 +121,13 @@ function send_query() {
         node.dataset.itemId = element.id;
 
         node.innerHTML = `<td onclick='add_to_calc(event)' 
-        class="name">${element.name}</td><td onclick='add_to_calc(event)' class="mode">${element.is_mods}</td><td class="price" style="display: none;">${element.price}</td>`;
+        class="name">${element.name}</td><td onclick='add_to_calc(event)' class="mode">${element.is_mods}</td><td class="price" style="display: none;">${element.price}</td><td><button class="btn btn-primary add-to-craft-btn">Додати до крафту</button></td>`;
         tbody.appendChild(node);
       }
+      let craftButtons = document.querySelectorAll('.add-to-craft-btn');
+        craftButtons.forEach(button => {
+            button.addEventListener('click', add_to_craft);
+        });
       
       
     })
@@ -210,15 +197,17 @@ function loadServers() {
     axios.get('/servers/')
         .then(function(response) {
             let serverSelect = document.getElementById('server-select');
+            let recipeItemSelect = document.getElementById('recipe-item-select');
             serverSelect.innerHTML = '';
+            recipeItemSelect.innerHTML = '';
             response.data.forEach(function(server) {
                 let option = document.createElement('option');
                 option.value = server.id;
                 option.textContent = server.name;
-                serverSelect.appendChild(option);
+                serverSelect.appendChild(option.cloneNode(true));
+                recipeItemSelect.appendChild(option);
             });
             send_query();
-            loadItemsForRecipe();
         })
         .catch(function(error) {
             alert('Error loading servers: ' + error);
@@ -300,3 +289,22 @@ document.getElementById('save-recipe-btn').addEventListener('click', function() 
         alert('Error saving recipe: ' + error);
     });
 });
+
+function add_to_craft(event) {
+    let item_id = event.target.parentNode.parentNode.dataset.itemId;
+    let ingredientsDiv = document.getElementById('recipe-ingredients');
+    let ingredientDiv = document.createElement('div');
+    let select = document.createElement('select');
+    select.className = 'ingredient-select';
+    let option = document.createElement('option');
+    option.value = item_id;
+    option.textContent = event.target.parentNode.parentNode.querySelector('.name').innerText;
+    select.appendChild(option);
+    ingredientDiv.appendChild(select);
+    let input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'ingredient-quantity';
+    input.placeholder = 'Quantity';
+    ingredientDiv.appendChild(input);
+    ingredientsDiv.appendChild(ingredientDiv);
+}
