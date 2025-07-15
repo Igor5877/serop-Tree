@@ -1,4 +1,22 @@
 
+function loadServers() {
+    axios.get('/servers/')
+        .then(function(response) {
+            let serverSelect = document.getElementById('server-select');
+            serverSelect.innerHTML = '';
+            response.data.forEach(function(server) {
+                let option = document.createElement('option');
+                option.value = server.id;
+                option.textContent = server.name;
+                serverSelect.appendChild(option);
+            });
+            send_query(); // Call send_query after servers are loaded
+        })
+        .catch(function(error) {
+            alert('Error loading servers: ' + error);
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     loadServers();
     document.getElementById('server-select').addEventListener('change', send_query);
@@ -103,6 +121,7 @@ function send_query() {
   let input = document.getElementById('search-input')
   let select = document.getElementById('search-select')
   let serverId = document.getElementById('server-select').value;
+  console.log("Sending query with serverId:", serverId);
   
   if (!serverId) {
     return;
@@ -197,17 +216,15 @@ function loadServers() {
     axios.get('/servers/')
         .then(function(response) {
             let serverSelect = document.getElementById('server-select');
-            let recipeItemSelect = document.getElementById('recipe-item-select');
             serverSelect.innerHTML = '';
-            recipeItemSelect.innerHTML = '';
             response.data.forEach(function(server) {
                 let option = document.createElement('option');
                 option.value = server.id;
                 option.textContent = server.name;
-                serverSelect.appendChild(option.cloneNode(true));
-                recipeItemSelect.appendChild(option);
+                serverSelect.appendChild(option);
             });
             send_query();
+            loadItemsForRecipe();
         })
         .catch(function(error) {
             alert('Error loading servers: ' + error);
